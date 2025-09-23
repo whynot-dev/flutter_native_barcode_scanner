@@ -28,7 +28,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-enum CameraActions { flipCamera, toggleFlashlight, stopScanner, startScanner, setOverlay, navigate }
+enum CameraActions { flipCamera, toggleFlashlight, stopScanner, startScanner, setOverlay, navigate, changeMode }
 
 class _MyAppState extends State<MyApp> {
   @override
@@ -61,7 +61,7 @@ class _MyDemoAppState extends State<MyDemoApp> {
 
   int? progress;
   bool withOverlay = true;
-  ScannerType scannerType = ScannerType.mrz;
+  ScannerType scannerType = ScannerType.barcode;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +69,7 @@ class _MyDemoAppState extends State<MyDemoApp> {
     return Scaffold(
         appBar: AppBar(title: Text('Scanner ${scannerType.name} example'), actions: [
           PopupMenuButton<CameraActions>(
-            onSelected: (CameraActions result) {
+            onSelected: (CameraActions result) async {
               switch (result) {
                 case CameraActions.flipCamera:
                   BarcodeScanner.flipCamera();
@@ -88,6 +88,22 @@ class _MyDemoAppState extends State<MyDemoApp> {
                   break;
                 case CameraActions.navigate:
                   navigate();
+                  break;
+                case CameraActions.changeMode:
+
+                  await BarcodeScanner.stopScanner();
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  setState(() {
+                    if (scannerType == ScannerType.mrz) {
+                      scannerType = ScannerType.barcode;
+                    } else if (scannerType == ScannerType.barcode) {
+                      scannerType = ScannerType.text;
+                    } else if (scannerType == ScannerType.text) {
+                      scannerType = ScannerType.mrz;
+                    }
+                  });
+                  BarcodeScanner.startScanner();
+
                   break;
               }
             },
@@ -116,6 +132,10 @@ class _MyDemoAppState extends State<MyDemoApp> {
                 value: CameraActions.navigate,
                 child: Text('Navigate push'),
               ),
+              PopupMenuItem<CameraActions>(
+                value: CameraActions.changeMode,
+                child: Text('Change mode ($scannerType)'),
+              ),
             ],
           ),
         ]),
@@ -124,7 +144,7 @@ class _MyDemoAppState extends State<MyDemoApp> {
             Positioned.fill(
               child: Builder(builder: (builderContext) {
                 Widget child = BarcodeScannerWidget(
-                  scannerType: ScannerType.mrz,
+                  scannerType: scannerType,
                   onBarcodeDetected: (barcode) async {
                     await showDialog(
                         context: builderContext,

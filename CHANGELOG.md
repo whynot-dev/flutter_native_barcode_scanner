@@ -1,3 +1,8 @@
+## 1.0.12
+- Compatibility with Android 16Ko Page size support
+- Upgrade gradle version
+- Upgrade target sdk
+
 ## 1.0.11
 - Improve MRZ reader with text and image callback
 

@@ -46,7 +46,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  native_barcode_scanner: ^1.0.11
+  native_barcode_scanner: ^1.0.12
 ```
 
 ## Usage
