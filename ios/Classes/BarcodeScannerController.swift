@@ -41,6 +41,7 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
     }
     
     override public func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
         captureSession.stopRunning()
     }
     
@@ -81,8 +82,9 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
         
         do {
             
-            let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: AVMediaType.video, position: .back)
-            // Get the back-facing camera for capturing videos
+            let cameraPosition: AVCaptureDevice.Position = (self.selector == "front") ? .front : .back
+            let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: AVMediaType.video, position: cameraPosition)
+            // Get the camera device matching the selected position
             guard let captureDevice = deviceDiscoverySession.devices.first else {
                 barcodeStream?(FlutterError(code: "native_scanner_failed", message: "Failed to get the camera device", details: nil))
                 return
@@ -105,7 +107,7 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
             
             videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
             videoPreviewLayer?.videoGravity = .resizeAspectFill
-            if (self.orientation == "portrait" || self.orientation == nil) {
+            if (self.orientation == "portrait") {
                 videoPreviewLayer?.connection?.videoOrientation = .portrait
             } else if (self.orientation == "landscapeLeft") {
                 videoPreviewLayer?.connection?.videoOrientation = .landscapeLeft
@@ -150,7 +152,9 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
         }
 
         // Get the metadata object.
-        let metadataObj = metadataObjects[0] as! AVMetadataMachineReadableCodeObject
+        guard let metadataObj = metadataObjects[0] as? AVMetadataMachineReadableCodeObject else {
+            return
+        }
         if supportedCodeTypes.contains(metadataObj.type) {
             if metadataObj.stringValue != nil {
                 barcodeStream?(["barcode": metadataObj.stringValue!, "format": convertBarcodeType(type: metadataObj.type)])
@@ -190,42 +194,28 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
         guard let device = getCaptureDeviceFromCurrentSession(session: captureSession) else {
             return
         }
-        
-        do {
-            try device.lockForConfiguration()
-            
-            if (device.torchMode == AVCaptureDevice.TorchMode.off) {
-                setFlashStatus(device: device, mode: .on)
-            } else {
-                setFlashStatus(device: device, mode: .off)
-            }
-            
-            device.unlockForConfiguration()
-        } catch {
-            print(error)
+
+        if (device.torchMode == AVCaptureDevice.TorchMode.off) {
+            setFlashStatus(device: device, mode: .on)
+        } else {
+            setFlashStatus(device: device, mode: .off)
         }
     }
-    
+
     private func setFlashStatus(device: AVCaptureDevice, mode: AVCaptureDevice.TorchMode) {
         guard device.hasTorch else {
             return
         }
-        
+
         do {
             try device.lockForConfiguration()
-            
+            defer { device.unlockForConfiguration() }
+
             if (mode == .off) {
                 device.torchMode = AVCaptureDevice.TorchMode.off
             } else {
-                // Treat .auto & .on equally.
-                do {
-                    try device.setTorchModeOn(level: 1.0)
-                } catch {
-                    print(error)
-                }
+                try device.setTorchModeOn(level: 1.0)
             }
-            
-            device.unlockForConfiguration()
         } catch {
             print(error)
         }

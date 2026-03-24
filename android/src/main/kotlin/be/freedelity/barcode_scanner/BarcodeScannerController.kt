@@ -235,7 +235,7 @@ class BarcodeScannerController(private val activity: Activity, messenger: Binary
             result.error("CameraAccess", exception.message, null)
             return
         }
-        throw (exception as RuntimeException)
+        result.error("native_scanner_failed", exception.message, null)
     }
 
     private fun configureAutofocus() {
@@ -421,19 +421,13 @@ class BarcodeScannerController(private val activity: Activity, messenger: Binary
 
                                         Log.i("native_scanner", "Extract MRZ done with result $mrz")
 
-                                        var x = points!![0].x
-                                        var y = points!![0].y
-                                        var width = points!![1].x - points!![0].x
-                                        var height = points!![2].y - points!![0].y
+                                        val bmpW = mrzBitmap!!.width
+                                        val bmpH = mrzBitmap!!.height
 
-                                        if (width > mrzBitmap!!.width) {
-                                            x = 0
-                                            width = mrzBitmap!!.width
-                                        }
-                                        if (height > mrzBitmap!!.height) {
-                                            y = 0
-                                            height = mrzBitmap!!.height
-                                        }
+                                        var x = points!![0].x.coerceIn(0, bmpW - 1)
+                                        var y = points!![0].y.coerceIn(0, bmpH - 1)
+                                        var width = (points!![1].x - points!![0].x).coerceIn(1, bmpW - x)
+                                        var height = (points!![2].y - points!![0].y).coerceIn(1, bmpH - y)
 
                                         val croppedBitmap = Bitmap.createBitmap(
                                             mrzBitmap!!,
