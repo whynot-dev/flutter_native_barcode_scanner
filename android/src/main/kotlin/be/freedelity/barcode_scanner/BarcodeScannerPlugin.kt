@@ -51,7 +51,7 @@ class BarcodeScannerPlugin: FlutterPlugin, ActivityAware {
 
     flutterPluginBinding
       .platformViewRegistry
-      .registerViewFactory(platformViewChannel, BarcodeScannerViewFactory(activity, barcodeScannerController!!))
+      .registerViewFactory(platformViewChannel, BarcodeScannerViewFactory(activity, barcodeScannerController!!, binding))
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {onAttachedToActivity(binding)}

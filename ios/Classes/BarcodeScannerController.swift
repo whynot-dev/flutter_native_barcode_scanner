@@ -84,7 +84,7 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
             
             let cameraPosition: AVCaptureDevice.Position = (self.selector == "front") ? .front : .back
             let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: AVMediaType.video, position: cameraPosition)
-            // Get the back-facing camera for capturing videos
+            // Get the camera device matching the selected position
             guard let captureDevice = deviceDiscoverySession.devices.first else {
                 barcodeStream?(FlutterError(code: "native_scanner_failed", message: "Failed to get the camera device", details: nil))
                 return
@@ -194,35 +194,31 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
         guard let device = getCaptureDeviceFromCurrentSession(session: captureSession) else {
             return
         }
-        
-        do {
-            try device.lockForConfiguration()
-            
-            if (device.torchMode == AVCaptureDevice.TorchMode.off) {
-                setFlashStatus(device: device, mode: .on)
-            } else {
-                setFlashStatus(device: device, mode: .off)
-            }
-            
-            device.unlockForConfiguration()
-        } catch {
-            print(error)
+
+        if (device.torchMode == AVCaptureDevice.TorchMode.off) {
+            setFlashStatus(device: device, mode: .on)
+        } else {
+            setFlashStatus(device: device, mode: .off)
         }
     }
-    
+
     private func setFlashStatus(device: AVCaptureDevice, mode: AVCaptureDevice.TorchMode) {
         guard device.hasTorch else {
             return
         }
 
-        if (mode == .off) {
-            device.torchMode = AVCaptureDevice.TorchMode.off
-        } else {
-            do {
+        do {
+            try device.lockForConfiguration()
+
+            if (mode == .off) {
+                device.torchMode = AVCaptureDevice.TorchMode.off
+            } else {
                 try device.setTorchModeOn(level: 1.0)
-            } catch {
-                print(error)
             }
+
+            device.unlockForConfiguration()
+        } catch {
+            print(error)
         }
     }
     
