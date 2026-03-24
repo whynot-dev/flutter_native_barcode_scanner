@@ -209,14 +209,13 @@ class BarcodeScannerController: UIViewController, AVCaptureMetadataOutputObjects
 
         do {
             try device.lockForConfiguration()
+            defer { device.unlockForConfiguration() }
 
             if (mode == .off) {
                 device.torchMode = AVCaptureDevice.TorchMode.off
             } else {
                 try device.setTorchModeOn(level: 1.0)
             }
-
-            device.unlockForConfiguration()
         } catch {
             print(error)
         }
