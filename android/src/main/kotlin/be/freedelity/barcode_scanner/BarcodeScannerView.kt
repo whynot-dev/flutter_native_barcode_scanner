@@ -29,14 +29,11 @@ internal class BarcodeScannerView(activity: Activity, barcodeScannerController: 
     }
 
     init {
-
         if( allPermissionsGranted(context) ) {
             barcodeScannerController.startCamera(creationParams, context, previewView, cameraExecutor)
         } else {
             ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-
-        barcodeScannerController.startCamera(creationParams, context, previewView, cameraExecutor)
     }
 
     companion object {

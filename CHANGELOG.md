@@ -1,3 +1,14 @@
+## 1.0.13
+- iOS : Support Flutter 3.35+ and UIScene (3.41+)
+- Fix : Android double camera initialization on startup
+- Fix : Android MRZ bitmap cropping crash with out-of-bounds coordinates
+- Fix : Android exception handler crash on non-CameraAccessException
+- Fix : iOS camera selector parameter was ignored
+- Fix : iOS force-unwrap crash in barcode metadata delegate
+- Fix : iOS double device lock in torch toggle
+- Fix : Dart widget assertion now accepts MRZ-only usage
+- Sync podspec version
+
 ## 1.0.12
 - Compatibility with Android 16Ko Page size support
 - Upgrade gradle version

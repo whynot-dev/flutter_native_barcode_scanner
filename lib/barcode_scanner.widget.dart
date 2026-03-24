@@ -54,7 +54,7 @@ class BarcodeScannerWidget extends StatefulWidget {
         this.onScanProgress,
         required this.onError,
       })
-      : assert(onBarcodeDetected != null || onTextDetected != null),
+      : assert(onBarcodeDetected != null || onTextDetected != null || onMrzDetected != null),
         super(key: key);
 
   @override
